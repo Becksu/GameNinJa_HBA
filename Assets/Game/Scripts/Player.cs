@@ -26,18 +26,35 @@ public class Player : Character
     [SerializeField] private Skill skillfrefab;
     [SerializeField] private Transform throwPoint;
     [SerializeField] private GameObject attackArea;
-    [SerializeField] private Character hpheath;
+    //[SerializeField] private Character hpheath;
+    [SerializeField] private HealthBuff healthBuff;
+
+    private int combocount;
+    public int ComboCount
+    {
+        get
+        {
+            return combocount;
+        }
+        set 
+        { 
+            combocount = value;
+        }
+
+    }
+    private float timerattack = 0.5f;
     
 
     private bool isGrounded = true;
     private bool isJumping = false;
     public bool isAttack = false;
     private bool isDeath = false;
-    
+
+   
     private float horizontal;
     private float addHp;
 
-
+    private DateTime timeCombo;
 
     private int coin = 0;
     private Vector3 savePoint;
@@ -93,6 +110,10 @@ public class Player : Character
             {
                 Skill();
             }
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                ComboAttack();
+            }
            
         }
         
@@ -112,7 +133,7 @@ public class Player : Character
             ChangAnim("idle");
             rb.velocity = Vector2.zero;
         }
-      
+        //healthBuff.OnExcute();
     }
 
     public override void OnInit()
@@ -124,6 +145,8 @@ public class Player : Character
         DeActiveAttack();
         SavePoint();
         UIManager.instance.SetCoint(coin);
+        healthBuff.OnInit(this);
+        timeCombo = DateTime.Now;
 
     }
     public override void OnDespawn()
@@ -159,7 +182,35 @@ public class Player : Character
         Invoke(nameof(ResetAction), 0.5f);
         ActiveAttack();
         Invoke(nameof(DeActiveAttack), 0.5f);
-       
+        double detaltime = (DateTime.Now - timeCombo).TotalMilliseconds;
+        if(detaltime < 500)
+        {
+            ComboCount++;           
+        }
+        else
+        {
+            ComboCount = 1;
+        }
+        timeCombo = DateTime.Now;
+        
+    }
+    public void ComboAttack()
+    {
+        if (timerattack > 0 && combocount == 2)
+        {
+            Debug.Log("asbdk");
+        }
+    }
+
+    public void HealthBuff(float heath)
+    {
+        if (HP >= maxHp)
+        {
+            return;
+        }
+        HP+=heath;
+        Debug.Log("àdgdgggsd");
+        isDeath = false;
     }
     public void Throw()
     {
@@ -207,6 +258,8 @@ public class Player : Character
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+
+        
         if (collision.tag == "Coin")
         {
             coin++;
@@ -214,14 +267,26 @@ public class Player : Character
             UIManager.instance.SetCoint(coin);
             Destroy(collision.gameObject);
         }
-        if (collision.tag == "Death")
+        else if (collision.CompareTag("Heathbuff"))
+        {
+            Debug.Log("huynh");
+            healthBuff.SetAddHealth(true);
+        }
+        else if (collision.tag == "Death")
         {
            
             ChangAnim("die");
             Invoke(nameof(OnInit), 1f);
         }
     }
-
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Heathbuff"))
+        {
+            Debug.Log("huynh");
+            healthBuff.SetAddHealth(false);
+        }
+    }
     public void SetMove(float horizontal)
     {
         this.horizontal = horizontal;

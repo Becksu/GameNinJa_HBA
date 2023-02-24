@@ -8,7 +8,9 @@ public class Character : MonoBehaviour
     [SerializeField] private Animator anim;
     [SerializeField] protected HeathBar heathBar;
     [SerializeField] protected TextCombat CombatTextPrefab;
+   
     [SerializeField] private float hp;
+    protected float maxHp;
     public float HP { get { return hp; } set { hp = value; } }
     private string currenAnim;
     public bool isDeathp => hp <= 0;
@@ -17,9 +19,12 @@ public class Character : MonoBehaviour
         OnInit();
     }
     public virtual void OnInit()
-    {       
-        hp = 100;
-        heathBar.OnInit(100,transform);
+    {
+        maxHp = 100;
+        hp = maxHp;
+        heathBar.OnInit(maxHp,transform);
+        
+        
     }
     public virtual void OnDeath()
     {
